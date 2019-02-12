@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "278821676708",
+    "firebase_url": "https://olauber-51eae.firebaseio.com",
+    "project_id": "olauber-51eae",
+    "storage_bucket": "olauber-51eae.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:278821676708:android:4ee90e2c16a64d31",
+        "android_client_info": {
+          "package_name": "temperatureconverter.android.vogella.com.olauber"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "278821676708-u0cfat2rhkc49djhngnskf9rl01n5jpu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "temperatureconverter.android.vogella.com.olauber",
+            "certificate_hash": "06d7e974d100c5621af001ce716cec465f63c45f"
+          }
+        },
+        {
+          "client_id": "278821676708-gedrfne156a4ntf6kcv0dc1i5p81co8g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEboFjQmpJf4_n3WEoV8yDxvYEiiMzqAQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "278821676708-gedrfne156a4ntf6kcv0dc1i5p81co8g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
