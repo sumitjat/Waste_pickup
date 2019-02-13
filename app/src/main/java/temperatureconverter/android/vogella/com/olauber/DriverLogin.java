@@ -34,7 +34,7 @@ public class DriverLogin extends AppCompatActivity {
         memail=findViewById(R.id.email_driver);
         mpassword=findViewById(R.id.password_driver);
 
-        mlogin=findViewById(R.id.login_driver);
+        mlogin=findViewById(R.id.login_customer);
         mregister=findViewById(R.id.register_driver);
 
         mregister.setOnClickListener(new View.OnClickListener() {

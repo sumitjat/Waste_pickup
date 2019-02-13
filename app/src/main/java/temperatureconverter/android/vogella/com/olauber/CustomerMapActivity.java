@@ -29,31 +29,52 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-public class DriverMapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class CustomerMapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
-    private GoogleMap mMap;
+
+private GoogleMap mMap;
     GoogleApiClient mGoogleApiClient;
     Location mLocation;
     LocationRequest mLocationRequest;
-    private Button mLogout;
+    private Button mLogout,mrequest;
+    private LatLng pickup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_driver_map);
+        setContentView(R.layout.activity_customer_map);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
         mLogout=findViewById(R.id.logout_driver);
+        mrequest=findViewById(R.id.Call);
+
+        mrequest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                String userid=FirebaseAuth.getInstance().getCurrentUser().getUid();
+                DatabaseReference ref=FirebaseDatabase.getInstance().getReference("customerRequest");
+                GeoFire geoFire=new GeoFire(ref);
+                geoFire.setLocation(userid,new GeoLocation(mLocation.getLatitude(),mLocation.getLongitude()));
+
+
+                pickup=new LatLng(mLocation.getLatitude(),mLocation.getLongitude());
+                mMap.addMarker(new MarkerOptions().position(pickup).title("Here"));
+
+                mrequest.setText("Getting YOur Driver");
+
+            }
+        });
 
         mLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 FirebaseAuth.getInstance().signOut();
-                Intent newintent=new Intent(DriverMapActivity.this,MainActivity.class);
+                Intent newintent=new Intent(CustomerMapActivity.this,MainActivity.class);
                 startActivity(newintent);
                 finish();
                 return;
@@ -109,11 +130,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
 
-        String userid= FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference ref= FirebaseDatabase.getInstance().getReference("DriverAvailable");
 
-        GeoFire geoFire=new GeoFire(ref);
-        geoFire.setLocation(userid,new GeoLocation(location.getLatitude(),location.getLongitude()));
     }
 
     @Override
@@ -159,12 +176,8 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
     protected void onStop() {
         super.onStop();
 
-        String userid= FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference ref= FirebaseDatabase.getInstance().getReference("DriverAvailable");
 
-        GeoFire geoFire=new GeoFire(ref);
-        geoFire.removeLocation(userid);
     }
-    }
+}
 
 
