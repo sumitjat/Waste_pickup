@@ -8,7 +8,7 @@ import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Button mDriver;
+    private Button mDriver,mcustomer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -16,6 +16,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mDriver=findViewById(R.id.main_driver);
+        mcustomer=findViewById(R.id.login_customer);
 
         mDriver.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -23,6 +24,17 @@ public class MainActivity extends AppCompatActivity {
 
                 Intent DriverIntent=new Intent(MainActivity.this,DriverLogin.class);
                 startActivity(DriverIntent);
+                finish();
+                return;
+            }
+        });
+
+        mcustomer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent CustomerIntent=new Intent(MainActivity.this,CustomerLogin.class);
+                startActivity(CustomerIntent);
                 finish();
                 return;
             }
