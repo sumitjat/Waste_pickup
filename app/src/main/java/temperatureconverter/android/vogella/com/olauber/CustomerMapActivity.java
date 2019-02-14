@@ -10,13 +10,16 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -25,19 +28,23 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class CustomerMapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
-
+    private static final String TAG = "CustomerMapActivity";
 private GoogleMap mMap;
     GoogleApiClient mGoogleApiClient;
     Location mLocation;
     LocationRequest mLocationRequest;
     private Button mLogout,mrequest;
     private LatLng pickup;
+    private FusedLocationProviderClient mFusedLocationProviderClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,14 +62,8 @@ private GoogleMap mMap;
             @Override
             public void onClick(View v) {
 
-                String userid=FirebaseAuth.getInstance().getCurrentUser().getUid();
-                DatabaseReference ref=FirebaseDatabase.getInstance().getReference("customerRequest");
-                GeoFire geoFire=new GeoFire(ref);
-                geoFire.setLocation(userid,new GeoLocation(mLocation.getLatitude(),mLocation.getLongitude()));
+               OnDeviceLocation();
 
-
-                pickup=new LatLng(mLocation.getLatitude(),mLocation.getLongitude());
-                mMap.addMarker(new MarkerOptions().position(pickup).title("Here"));
 
                 mrequest.setText("Getting YOur Driver");
 
@@ -120,6 +121,59 @@ private GoogleMap mMap;
                 .addOnConnectionFailedListener(this).addApi(LocationServices.API)
                 .build();
         mGoogleApiClient.connect();
+    }
+
+    private void OnDeviceLocation() {
+
+        Log.d(TAG, "ondevicelocation() is running ");
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        try {
+
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            Task location1 = mFusedLocationProviderClient.getLastLocation();
+            location1.addOnCompleteListener(new OnCompleteListener() {
+                @Override
+                public void onComplete(@NonNull Task task) {
+
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        Log.d(TAG, "oncomplete found lcoation");
+
+                        Location currentlocation = (Location) task.getResult();
+                        String userid= FirebaseAuth.getInstance().getCurrentUser().getUid();
+                        pickup=new LatLng(currentlocation.getLatitude(),currentlocation.getLongitude());
+
+                        DatabaseReference ref= FirebaseDatabase.getInstance().getReference("customerRequest");
+
+                        GeoFire geoFire=new GeoFire(ref);
+                        geoFire.setLocation(userid, new GeoLocation(currentlocation.getLatitude(),currentlocation.getLongitude()), new GeoFire.CompletionListener() {
+                            @Override
+                            public void onComplete(String key, DatabaseError error) {
+
+                            }
+                        });
+
+
+                    } else {
+
+                        Toast.makeText(CustomerMapActivity.this, "unable to get lovation", Toast.LENGTH_LONG).show();
+                    }
+
+                }
+            });
+
+
+        } catch (SecurityException e) {
+            Toast.makeText(CustomerMapActivity.this, "exceptionf found" + e, Toast.LENGTH_SHORT);
+        }
     }
 
     @Override

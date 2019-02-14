@@ -16,7 +16,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mDriver=findViewById(R.id.main_driver);
-        mcustomer=findViewById(R.id.login_customer);
+        mcustomer=findViewById(R.id.main_customer);
 
         mDriver.setOnClickListener(new View.OnClickListener() {
             @Override

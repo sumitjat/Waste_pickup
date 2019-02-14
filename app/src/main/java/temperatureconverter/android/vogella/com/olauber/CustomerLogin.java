@@ -33,7 +33,7 @@ public class CustomerLogin extends AppCompatActivity {
         mpassword = findViewById(R.id.password_customer);
 
         mlogin = findViewById(R.id.login_customer);
-        mregister = findViewById(R.id.register_driver);
+        mregister = findViewById(R.id.register_customer);
 
         mregister.setOnClickListener(new View.OnClickListener() {
             @Override

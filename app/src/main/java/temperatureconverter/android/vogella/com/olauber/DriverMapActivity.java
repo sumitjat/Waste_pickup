@@ -10,13 +10,16 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -25,7 +28,10 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -36,6 +42,9 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
     Location mLocation;
     LocationRequest mLocationRequest;
     private Button mLogout;
+    private static final String TAG = "DriverMapActivity";
+
+    private FusedLocationProviderClient mFusedLocationProviderClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,14 +55,14 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        mLogout=findViewById(R.id.logout_driver);
+        mLogout = findViewById(R.id.logout_driver);
 
         mLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 FirebaseAuth.getInstance().signOut();
-                Intent newintent=new Intent(DriverMapActivity.this,MainActivity.class);
+                Intent newintent = new Intent(DriverMapActivity.this, MainActivity.class);
                 startActivity(newintent);
                 finish();
                 return;
@@ -89,8 +98,60 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
             return;
         }
         buildGoogleApiClient();
+        OnDeviceLocation();
         mMap.setMyLocationEnabled(true);
 
+    }
+
+    private void OnDeviceLocation() {
+
+        Log.d(TAG, "ondevicelocation() is running ");
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        try {
+
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            Task location1 = mFusedLocationProviderClient.getLastLocation();
+                location1.addOnCompleteListener(new OnCompleteListener() {
+                    @Override
+                    public void onComplete(@NonNull Task task) {
+
+                        if (task.isSuccessful() && task.getResult() != null) {
+                            Log.d(TAG, "oncomplete found lcoation");
+
+                            Location currentlocation = (Location) task.getResult();
+                            String userid= FirebaseAuth.getInstance().getCurrentUser().getUid();
+                            DatabaseReference ref= FirebaseDatabase.getInstance().getReference("DriverAvailable");
+
+                            GeoFire geoFire=new GeoFire(ref);
+                            geoFire.setLocation(userid, new GeoLocation(currentlocation.getLatitude(), currentlocation.getLongitude()), new GeoFire.CompletionListener() {
+                                @Override
+                                public void onComplete(String key, DatabaseError error) {
+
+                                }
+                            });
+
+
+                        } else {
+
+                            Toast.makeText(DriverMapActivity.this, "unable to get lovation", Toast.LENGTH_LONG).show();
+                        }
+
+                    }
+                });
+
+
+        } catch (SecurityException e) {
+            Toast.makeText(DriverMapActivity.this, "exceptionf found" + e, Toast.LENGTH_SHORT);
+        }
     }
 
     private synchronized void buildGoogleApiClient() {
@@ -104,16 +165,12 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
     @Override
     public void onLocationChanged(Location location) {
 
-        mLocation=location;
+
         LatLng latLng=new LatLng(location.getLatitude(),location.getLongitude());
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
 
-        String userid= FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference ref= FirebaseDatabase.getInstance().getReference("DriverAvailable");
 
-        GeoFire geoFire=new GeoFire(ref);
-        geoFire.setLocation(userid,new GeoLocation(location.getLatitude(),location.getLongitude()));
     }
 
     @Override
@@ -163,7 +220,12 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
         DatabaseReference ref= FirebaseDatabase.getInstance().getReference("DriverAvailable");
 
         GeoFire geoFire=new GeoFire(ref);
-        geoFire.removeLocation(userid);
+        geoFire.removeLocation(userid, new GeoFire.CompletionListener() {
+            @Override
+            public void onComplete(String key, DatabaseError error) {
+
+            }
+        });
     }
     }
 
