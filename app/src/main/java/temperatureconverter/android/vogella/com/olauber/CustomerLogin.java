@@ -70,7 +70,7 @@ public class CustomerLogin extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
 
                         if (task.isSuccessful()) {
-                            Toast.makeText(CustomerLogin.this, "Successss", Toast.LENGTH_LONG).show();
+
                             android.content.Intent mainIntent = new android.content.Intent(CustomerLogin.this, CustomerMapActivity.class);
                             startActivity(mainIntent);
                             finish();

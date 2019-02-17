@@ -216,7 +216,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
     protected void onStop() {
         super.onStop();
 
-        String userid= FirebaseAuth.getInstance().getCurrentUser().getUid();
+       /* String userid= FirebaseAuth.getInstance().getCurrentUser().getUid();
         DatabaseReference ref= FirebaseDatabase.getInstance().getReference("DriverAvailable");
 
         GeoFire geoFire=new GeoFire(ref);
@@ -224,8 +224,9 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
             @Override
             public void onComplete(String key, DatabaseError error) {
 
+
             }
-        });
+        });*/
     }
     }
 

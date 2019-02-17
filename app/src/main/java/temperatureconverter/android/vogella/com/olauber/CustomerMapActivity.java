@@ -17,6 +17,8 @@ import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
+import com.firebase.geofire.GeoQuery;
+import com.firebase.geofire.GeoQueryDataEventListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -31,6 +33,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -44,6 +47,9 @@ private GoogleMap mMap;
     LocationRequest mLocationRequest;
     private Button mLogout,mrequest;
     private LatLng pickup;
+    private Double latitude,longitude;
+    GeoLocation mGeoLocation;
+
     private FusedLocationProviderClient mFusedLocationProviderClient;
 
     @Override
@@ -63,9 +69,9 @@ private GoogleMap mMap;
             public void onClick(View v) {
 
                OnDeviceLocation();
+               mrequest.setText("Getting YOur Driver");
+               getClosestDriver();
 
-
-                mrequest.setText("Getting YOur Driver");
 
             }
         });
@@ -82,6 +88,124 @@ private GoogleMap mMap;
             }
         });
 
+    }
+
+    private void OnDeviceLocation() {
+
+        Log.d(TAG, "ondevicelocation() is running ");
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        try {
+
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            Task location1 = mFusedLocationProviderClient.getLastLocation();
+            location1.addOnCompleteListener(new OnCompleteListener() {
+                @Override
+                public void onComplete(@NonNull Task task) {
+
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        Log.d(TAG, "oncomplete found lcoation");
+
+                        Location currentlocation = (Location) task.getResult();
+                        String userid= FirebaseAuth.getInstance().getCurrentUser().getUid();
+                        latitude=currentlocation.getLatitude();
+                        longitude=currentlocation.getLongitude();
+
+                        mGeoLocation=new GeoLocation(currentlocation.getLatitude(),currentlocation.getLongitude());
+                        if(mGeoLocation==null){
+                            Toast.makeText(CustomerMapActivity.this,"what do you want bitch",Toast.LENGTH_LONG).show();
+                        }
+                        else {
+
+                            Toast.makeText(CustomerMapActivity.this, "yppppppppppppppp", Toast.LENGTH_LONG).show();
+                        }
+                        DatabaseReference ref= FirebaseDatabase.getInstance().getReference("customerRequest");
+
+                        GeoFire geoFire=new GeoFire(ref);
+                        geoFire.setLocation(userid, new GeoLocation(currentlocation.getLatitude(),currentlocation.getLongitude()), new GeoFire.CompletionListener() {
+                            @Override
+                            public void onComplete(String key, DatabaseError error) {
+
+                            }
+                        });
+
+
+                    } else {
+
+                        Toast.makeText(CustomerMapActivity.this, "unable to get lovation", Toast.LENGTH_LONG).show();
+                    }
+
+                }
+            });
+
+
+        } catch (SecurityException e) {
+            Toast.makeText(CustomerMapActivity.this, "exceptionf found" + e, Toast.LENGTH_SHORT);
+        }
+
+
+    }
+
+    private  double radius=1;
+    private boolean DriverFound=false;
+    private String DriverFoundID;
+
+    private void getClosestDriver() {
+
+        DatabaseReference reference=FirebaseDatabase.getInstance().getReference().child("DriverAvailable");
+        GeoFire geoFire=new GeoFire(reference);
+        GeoQuery geoQuery=geoFire.queryAtLocation(mGeoLocation,radius);
+
+        geoQuery.addGeoQueryDataEventListener(new GeoQueryDataEventListener() {
+            @Override
+            public void onDataEntered(DataSnapshot dataSnapshot, GeoLocation location) {
+
+                if (!DriverFound) {
+
+                    DriverFound = true;
+                    DriverFoundID=dataSnapshot.getKey().toString();
+                    Toast.makeText(CustomerMapActivity.this,DriverFoundID,Toast.LENGTH_LONG).show();
+
+                }
+            }
+            @Override
+            public void onDataExited(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onDataMoved(DataSnapshot dataSnapshot, GeoLocation location) {
+
+            }
+
+            @Override
+            public void onDataChanged(DataSnapshot dataSnapshot, GeoLocation location) {
+
+            }
+
+            @Override
+            public void onGeoQueryReady() {
+
+                if (!DriverFound)
+                {
+                    radius++;
+                    getClosestDriver();
+                }
+            }
+
+            @Override
+            public void onGeoQueryError(DatabaseError error) {
+
+            }
+        });
     }
 
 
@@ -123,58 +247,7 @@ private GoogleMap mMap;
         mGoogleApiClient.connect();
     }
 
-    private void OnDeviceLocation() {
 
-        Log.d(TAG, "ondevicelocation() is running ");
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        try {
-
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return;
-            }
-            Task location1 = mFusedLocationProviderClient.getLastLocation();
-            location1.addOnCompleteListener(new OnCompleteListener() {
-                @Override
-                public void onComplete(@NonNull Task task) {
-
-                    if (task.isSuccessful() && task.getResult() != null) {
-                        Log.d(TAG, "oncomplete found lcoation");
-
-                        Location currentlocation = (Location) task.getResult();
-                        String userid= FirebaseAuth.getInstance().getCurrentUser().getUid();
-                        pickup=new LatLng(currentlocation.getLatitude(),currentlocation.getLongitude());
-
-                        DatabaseReference ref= FirebaseDatabase.getInstance().getReference("customerRequest");
-
-                        GeoFire geoFire=new GeoFire(ref);
-                        geoFire.setLocation(userid, new GeoLocation(currentlocation.getLatitude(),currentlocation.getLongitude()), new GeoFire.CompletionListener() {
-                            @Override
-                            public void onComplete(String key, DatabaseError error) {
-
-                            }
-                        });
-
-
-                    } else {
-
-                        Toast.makeText(CustomerMapActivity.this, "unable to get lovation", Toast.LENGTH_LONG).show();
-                    }
-
-                }
-            });
-
-
-        } catch (SecurityException e) {
-            Toast.makeText(CustomerMapActivity.this, "exceptionf found" + e, Toast.LENGTH_SHORT);
-        }
-    }
 
     @Override
     public void onLocationChanged(Location location) {
