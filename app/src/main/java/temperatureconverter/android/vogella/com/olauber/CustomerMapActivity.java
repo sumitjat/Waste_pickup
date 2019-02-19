@@ -123,10 +123,7 @@ private GoogleMap mMap;
                         if(mGeoLocation==null){
                             Toast.makeText(CustomerMapActivity.this,"what do you want bitch",Toast.LENGTH_LONG).show();
                         }
-                        else {
 
-                            Toast.makeText(CustomerMapActivity.this, "yppppppppppppppp", Toast.LENGTH_LONG).show();
-                        }
                         DatabaseReference ref= FirebaseDatabase.getInstance().getReference("customerRequest");
 
                         GeoFire geoFire=new GeoFire(ref);
@@ -157,12 +154,18 @@ private GoogleMap mMap;
     private  double radius=1;
     private boolean DriverFound=false;
     private String DriverFoundID;
+    GeoQuery geoQuery;
 
-    private void getClosestDriver() {
 
-        DatabaseReference reference=FirebaseDatabase.getInstance().getReference().child("DriverAvailable");
-        GeoFire geoFire=new GeoFire(reference);
-        GeoQuery geoQuery=geoFire.queryAtLocation(mGeoLocation,radius);
+
+        private void getClosestDriver () {
+try {
+    DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("DriverAvailable");
+    GeoFire geoFire = new GeoFire(reference);
+    if (mGeoLocation == null) {
+        Toast.makeText(CustomerMapActivity.this, "yoooo", Toast.LENGTH_LONG).show();
+    } else {
+        geoQuery = geoFire.queryAtLocation(mGeoLocation,radius);
 
         geoQuery.addGeoQueryDataEventListener(new GeoQueryDataEventListener() {
             @Override
@@ -171,11 +174,13 @@ private GoogleMap mMap;
                 if (!DriverFound) {
 
                     DriverFound = true;
-                    DriverFoundID=dataSnapshot.getKey().toString();
-                    Toast.makeText(CustomerMapActivity.this,DriverFoundID,Toast.LENGTH_LONG).show();
+                    DriverFoundID = dataSnapshot.getKey().toString();
+
+                    Toast.makeText(CustomerMapActivity.this, DriverFoundID, Toast.LENGTH_LONG).show();
 
                 }
             }
+
             @Override
             public void onDataExited(DataSnapshot dataSnapshot) {
 
@@ -194,8 +199,8 @@ private GoogleMap mMap;
             @Override
             public void onGeoQueryReady() {
 
-                if (!DriverFound)
-                {
+
+                if (!DriverFound) {
                     radius++;
                     getClosestDriver();
                 }
@@ -204,9 +209,17 @@ private GoogleMap mMap;
             @Override
             public void onGeoQueryError(DatabaseError error) {
 
+
             }
         });
     }
+}
+        catch (Exception e){
+
+            Toast.makeText(CustomerMapActivity.this,"error for you bitch"+e,Toast.LENGTH_LONG).show();
+        }
+    }
+
 
 
     /**
