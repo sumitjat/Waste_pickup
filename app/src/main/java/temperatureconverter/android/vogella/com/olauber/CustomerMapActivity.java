@@ -239,7 +239,7 @@ try {
 
     private void getDriverLocation() {
 
-            DatabaseReference driverlocationref=FirebaseDatabase.getInstance().getReference().child("DriverWorking").child(DriverFoundID).child("l");
+            DatabaseReference driverlocationref=FirebaseDatabase.getInstance().getReference().child("DriverAvailable").child(DriverFoundID).child("l");
             driverlocationref.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -264,7 +264,19 @@ try {
                         if (mDriverMarker != null) {
                             mDriverMarker.remove();
                         }
-                        mDriverMarker = mMap.addMarker(new MarkerOptions().position(driverLang).title("your Driver"));
+                        Location loc1=new Location("");
+                        loc1.setLatitude(mGeoLocation.latitude);
+                        loc1.setLongitude(mGeoLocation.longitude);
+
+                        Location loca2=new Location("");
+                        loca2.setLatitude(driverLang.latitude);
+                        loca2.setLongitude(driverLang.longitude);
+
+                        float distance=loc1.distanceTo(loca2);
+
+                        mrequest.setText(String.valueOf(distance));
+
+                                mDriverMarker = mMap.addMarker(new MarkerOptions().position(driverLang).title("your Driver"));
                     }
                 }
                     @Override

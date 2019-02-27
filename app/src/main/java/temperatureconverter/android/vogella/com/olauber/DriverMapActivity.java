@@ -84,23 +84,20 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
     private void getAssignCustomer() {
 
         String userid=FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference assigncustref=FirebaseDatabase.getInstance().getReference().child("Users").child("Drivers").child(userid);
+        DatabaseReference assigncustref=FirebaseDatabase.getInstance().getReference().child("Users").child("Drivers").child(userid).child("customerrideId");
         assigncustref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                 if(dataSnapshot.exists())
                 {
-                    Map<String,Object> map= (Map<String,Object>) dataSnapshot.getValue();
-                    if(map.get("customerrideId")!=null)
-                    {
-                        CustomerID=map.get("customerrideId").toString();
-
-                        getassignPickUpLocation();
-                    }
+                    CustomerID=dataSnapshot.getKey().toString();
+                    getassignPickUpLocation();
 
                 }
-            }
+
+                }
+
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
