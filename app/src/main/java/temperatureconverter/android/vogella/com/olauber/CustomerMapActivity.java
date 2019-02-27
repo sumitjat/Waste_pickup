@@ -29,6 +29,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -37,9 +38,14 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.HashMap;
+import java.util.List;
 
 public class CustomerMapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
+    private String DriverFoundID;
     private static final String TAG = "CustomerMapActivity";
 private GoogleMap mMap;
     GoogleApiClient mGoogleApiClient;
@@ -153,7 +159,7 @@ private GoogleMap mMap;
 
     private  double radius=1;
     private boolean DriverFound=false;
-    private String DriverFoundID;
+
     GeoQuery geoQuery;
 
 
@@ -175,6 +181,15 @@ try {
 
                     DriverFound = true;
                     DriverFoundID = dataSnapshot.getKey().toString();
+
+                    DatabaseReference driveref=FirebaseDatabase.getInstance().getReference().child("users").child("Drivers").child(DriverFoundID);
+                    String userid=FirebaseAuth.getInstance().getCurrentUser().getUid();
+                    HashMap hashMap=new HashMap();
+                    hashMap.put("customerrideId",userid);
+
+                    driveref.updateChildren(hashMap);
+
+                    getDriverLocation();
 
                     Toast.makeText(CustomerMapActivity.this, DriverFoundID, Toast.LENGTH_LONG).show();
 
@@ -220,6 +235,45 @@ try {
         }
     }
 
+    Marker mDriverMarker;
+
+    private void getDriverLocation() {
+
+            DatabaseReference driverlocationref=FirebaseDatabase.getInstance().getReference().child("DriverWorking").child(DriverFoundID).child("l");
+            driverlocationref.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                    if (dataSnapshot.exists())
+
+                    {
+                        List<Object> map = (List<Object>) dataSnapshot.getValue();
+                        double locationlng = 0;
+                        double locationlat = 0;
+                        if (map.get(0) != null ) {
+                            locationlat = Double.parseDouble(map.get(0).toString());
+
+                        }
+
+                        if(map.get(1) != null)
+                        {
+                            locationlng = Double.parseDouble(map.get(1).toString());
+                        }
+
+                        LatLng driverLang = new LatLng(locationlat, locationlng);
+                        if (mDriverMarker != null) {
+                            mDriverMarker.remove();
+                        }
+                        mDriverMarker = mMap.addMarker(new MarkerOptions().position(driverLang).title("your Driver"));
+                    }
+                }
+                    @Override
+                    public void onCancelled (@NonNull DatabaseError databaseError){
+
+
+                }
+            });
+    }
 
 
     /**
