@@ -25,6 +25,12 @@
         android:layout_marginBottom="20sp"
         android:inputType="number"/>
 
+    <ImageView
+        android:layout_width="100sp"
+        android:layout_height="100sp"
+        android:id="@+id/profileImage"
+        android:src="@android:drawable/stat_sys_warning"/>
+
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
