@@ -51,7 +51,8 @@ private GoogleMap mMap;
     GoogleApiClient mGoogleApiClient;
     Location mLocation;
     LocationRequest mLocationRequest;
-    private Button mLogout,mrequest;
+    private Button mLogout,mrequest,msetting;
+
     private LatLng pickup;
     private Double latitude,longitude;
     GeoLocation mGeoLocation;
@@ -69,6 +70,7 @@ private GoogleMap mMap;
 
         mLogout=findViewById(R.id.logout_driver);
         mrequest=findViewById(R.id.Call);
+        msetting=findViewById(R.id.Settings);
 
         mrequest.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,6 +92,16 @@ private GoogleMap mMap;
                 Intent newintent=new Intent(CustomerMapActivity.this,MainActivity.class);
                 startActivity(newintent);
                 finish();
+                return;
+            }
+        });
+
+        msetting.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent=new Intent(CustomerMapActivity.this,CustomerSettingActivity.class);
+                startActivity(intent);
                 return;
             }
         });
@@ -274,6 +286,7 @@ try {
 
                         float distance=loc1.distanceTo(loca2);
 
+
                         mrequest.setText(String.valueOf(distance));
 
                                 mDriverMarker = mMap.addMarker(new MarkerOptions().position(driverLang).title("your Driver"));
@@ -386,4 +399,12 @@ try {
     }
 }
 
+//to Cancel req After making some request
+/*
+    geoquery.removealllistener;
+    make them global driverlocationref and driverlocationlistener(of type ValueEventListener)
+    driverlocationref.removeEventListerner(driverlocationlistener)
+    and more not interested right now so check it later
+
+ */
 

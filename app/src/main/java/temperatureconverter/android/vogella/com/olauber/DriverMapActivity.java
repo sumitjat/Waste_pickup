@@ -109,7 +109,9 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
 
     private void getassignPickUpLocation() {
         String userid=FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference assigncustpickref=FirebaseDatabase.getInstance().getReference().child("customerRequest").child("customerrideId").child("l");
+        DatabaseReference refofdriver=FirebaseDatabase.getInstance().getReference().child("Users").child("Drivers").child(userid).child("customerrideId");
+        String key1=refofdriver.getKey();
+        DatabaseReference assigncustpickref=FirebaseDatabase.getInstance().getReference().child("customerRequest").child(key1).child("l");
         assigncustpickref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -246,7 +248,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
 
         String userid=FirebaseAuth.getInstance().getCurrentUser().getUid();
         DatabaseReference refavl=FirebaseDatabase.getInstance().getReference().child("DriverAvailable");
-        DatabaseReference refworking=FirebaseDatabase.getInstance().getReference().child("DriverAvailable");
+        DatabaseReference refworking=FirebaseDatabase.getInstance().getReference().child("DriverWorking");
         GeoFire geoFire=new GeoFire(refworking);
         GeoFire geoworking=new GeoFire(refavl);
 
