@@ -14,8 +14,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.common.ConnectionResult;
@@ -48,6 +52,12 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
     Location mLocation;
     LocationRequest mLocationRequest;
     private Button mLogout;
+
+    private LinearLayout mcustomerinfo;
+    private ImageView mcustomerprofile;
+    private TextView mcustomername,mcustomerphone;
+
+    DatabaseReference mcustomerdatabaseref;
     private static final String TAG = "DriverMapActivity";
 
     private String CustomerID="";
@@ -62,6 +72,16 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        mcustomername=findViewById(R.id.customername);
+        mcustomerphone=findViewById(R.id.customerphone);
+        mcustomerinfo=findViewById(R.id.customerinfo);
+
+        FirebaseAuth mAuth=FirebaseAuth.getInstance();
+        String userID=mAuth.getCurrentUser().getUid();
+
+        mcustomerdatabaseref= FirebaseDatabase.getInstance().getReference().child("users").child("Customers").child(userID);
+
+        mcustomerprofile=findViewById(R.id.customerprofileimage);
 
         mLogout = findViewById(R.id.logout_driver);
 
@@ -84,7 +104,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
     private void getAssignCustomer() {
 
         String userid=FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference assigncustref=FirebaseDatabase.getInstance().getReference().child("Users").child("Drivers").child(userid).child("customerrideId");
+        DatabaseReference assigncustref=FirebaseDatabase.getInstance().getReference().child("users").child("Drivers").child(userid).child("customerrideId");
         assigncustref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -93,6 +113,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
                 {
                     CustomerID=dataSnapshot.getKey().toString();
                     getassignPickUpLocation();
+                    getcustomerinfo();
 
                 }
 
@@ -107,9 +128,50 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
 
     }
 
+    private void getcustomerinfo() {
+
+        mcustomerinfo.setVisibility(View.VISIBLE);
+
+        mcustomerdatabaseref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                if (dataSnapshot.exists() && dataSnapshot.getChildrenCount()>0)
+                {
+                    Map<String,Object> map=(Map<String,Object>)dataSnapshot.getValue();
+                    if (map.get("name")!=null){
+
+
+                        mcustomername.setText(map.get("name").toString());
+
+                    }
+
+                    if (map.get("phone")!=null){
+
+
+                        mcustomerphone.setText(map.get("phone").toString());
+
+                    }
+
+                    if (map.get("profileimageurl")!=null)
+                    {
+
+                        Glide.with(getApplication()).load(map.get("profileimageurl").toString()).into(mcustomerprofile);
+
+
+                    }                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
     private void getassignPickUpLocation() {
         String userid=FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference refofdriver=FirebaseDatabase.getInstance().getReference().child("Users").child("Drivers").child(userid).child("customerrideId");
+        DatabaseReference refofdriver=FirebaseDatabase.getInstance().getReference().child("users").child("Drivers").child(userid).child("customerrideId");
         String key1=refofdriver.getKey();
         DatabaseReference assigncustpickref=FirebaseDatabase.getInstance().getReference().child("customerRequest").child(key1).child("l");
         assigncustpickref.addValueEventListener(new ValueEventListener() {

@@ -64,7 +64,7 @@ public class CustomerSettingActivity extends AppCompatActivity {
         mAuth=FirebaseAuth.getInstance();
         userID=mAuth.getCurrentUser().getUid();
 
-        mcustomerdatabaseref= FirebaseDatabase.getInstance().getReference().child("Users").child("Customers").child(userID);
+        mcustomerdatabaseref= FirebaseDatabase.getInstance().getReference().child("users").child("Customers").child(userID);
         getUser();
 
         imageView.setOnClickListener(new View.OnClickListener() {
@@ -98,7 +98,7 @@ public class CustomerSettingActivity extends AppCompatActivity {
         Name=mname.getText().toString();
         Phone=mphone.getText().toString();
 
-        Map userinfo=new HashMap();
+        Map userinfo=new HashMap(); //every
         userinfo.put("name",Name);
         userinfo.put("phone",Phone);
         mcustomerdatabaseref.updateChildren(userinfo);
