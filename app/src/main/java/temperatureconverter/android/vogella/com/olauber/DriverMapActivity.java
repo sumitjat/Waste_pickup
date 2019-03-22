@@ -61,6 +61,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
     private static final String TAG = "DriverMapActivity";
 
     private String CustomerID="";
+    private String key1="";
 
     private FusedLocationProviderClient mFusedLocationProviderClient;
 
@@ -172,7 +173,27 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
     private void getassignPickUpLocation() {
         String userid=FirebaseAuth.getInstance().getCurrentUser().getUid();
         DatabaseReference refofdriver=FirebaseDatabase.getInstance().getReference().child("users").child("Drivers").child(userid).child("customerrideId");
-        String key1=refofdriver.getKey();
+
+        refofdriver.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+               if(dataSnapshot.exists()) {
+                   key1= dataSnapshot.getValue().toString();
+               }
+               else
+               {
+                   Toast.makeText(DriverMapActivity.this,"No Yout thinh bithc", Toast.LENGTH_LONG);
+               }
+            }
+
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+        Toast.makeText(DriverMapActivity.this,"what "+key1, Toast.LENGTH_LONG);
         DatabaseReference assigncustpickref=FirebaseDatabase.getInstance().getReference().child("customerRequest").child(key1).child("l");
         assigncustpickref.addValueEventListener(new ValueEventListener() {
             @Override

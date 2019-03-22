@@ -42,7 +42,7 @@
                 android:id="@+id/customername"
                 android:paddingBottom="10sp"
                 android:paddingLeft="10sp"
-                android:textColor="black"/>
+                android:textColor="@color/colorPrimary"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
