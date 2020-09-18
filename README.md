@@ -1,5 +1,7 @@
-# Waste_pickup
+# Waste pickup
 It Is android project in which we build app so that non bio-degarable waste can be pickup separtley from the normal waste since it needs special treament. 
+
+Nothing Fancy !!
 
 ## Feature
 
